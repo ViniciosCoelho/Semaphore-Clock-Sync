@@ -15,9 +15,9 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
     private val clockSyncSocket = DatagramSocket(clientPort)
     private val syncMins = k
 
-    private var p = 2
+    private var p = 0
     private val semP = Semaphore(1)
-    private var q = 2
+    private var q = 0
     private val semQ = Semaphore(1)
     private var clock: Long = 0
     private val helper = ClockHelper()
@@ -110,18 +110,18 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
     private fun changeMode() {
         semP.acquire()
         val auxP = p
-        p = 2
+        p = 0
         semP.release()
 
         semQ.acquire()
         val auxQ = q
-        q = 2
+        q = 0
         semQ.release()
 
         val x = if (auxP + auxQ > 0) {
-            auxP / (auxP + auxQ)
+            auxP.toDouble() / (auxP + auxQ).toDouble()
         } else {
-            2
+            2.0
         }
 
         val time = helper.getRealTime(clock)

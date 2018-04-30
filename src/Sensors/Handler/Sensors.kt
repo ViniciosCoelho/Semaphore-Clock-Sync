@@ -38,7 +38,7 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Int) {
             }
 
             if (sendCounter == 5) {
-                sendParm(socket, serverIP, serverPort)
+                sendParm(socket, trafficServerIP, trafficServerPort)
                 sendCounter = 0
             }
         }

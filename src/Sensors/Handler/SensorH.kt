@@ -15,16 +15,17 @@ class SensorH(
     override fun sendParm(socket: DatagramSocket, trafficServerIP: String, trafficServerPort: Int) {
         val rnd = Random()
 
-        val rndNum = rnd.nextInt(50) + 5
-        sendVarTime = rndNum * Constants.second
+        val secs = (rnd.nextInt(50) + 5) % 50
+        sendVarTime = secs * Constants.second
         sleep(sendVarTime)
 
-        println("Message delayed = $sendVarTime seconds")
+        println("Message delayed = $secs seconds")
 
         val pVal = rnd.nextInt(100) + 1
-        val buffer = ("p" + pVal.toString()).toByteArray()
+        val buffer = ("p" + pVal.toString() + '\n').toByteArray()
         val packet = DatagramPacket(buffer, buffer.size, InetAddress.getByName(trafficServerIP), trafficServerPort)
 
+        clock += sendVarTime
         println("Sending P = $pVal in clock = ${helper.getRealTime(clock)}")
 
         socket.send(packet)

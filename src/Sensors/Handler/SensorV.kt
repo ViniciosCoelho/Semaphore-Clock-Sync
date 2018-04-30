@@ -15,17 +15,18 @@ class SensorV(
     override fun sendParm(socket: DatagramSocket, trafficServerIP: String, trafficServerPort: Int) {
         val rnd = Random()
 
-        val rndNum = rnd.nextInt(50) + 5
-        sendVarTime = rndNum * Constants.second
+        val secs = (rnd.nextInt(50) + 5) % 50
+        sendVarTime = secs * Constants.second
         sleep(sendVarTime)
 
-        println("Message delayed = $sendVarTime seconds")
+        println("Message delayed = $secs seconds")
 
         val qVal = rnd.nextInt(100) + 1
-        val buffer = ("q" + qVal.toString()).toByteArray()
+        val buffer = ("q" + qVal.toString() + '\n').toByteArray()
         val packet = DatagramPacket(buffer, buffer.size, InetAddress.getByName(trafficServerIP), trafficServerPort)
 
-        println("Sending Q = $qVal in clock = ${helper.getRealTime(clock + sendVarTime)}")
+        clock += sendVarTime
+        println("Sending Q = $qVal in clock = ${helper.getRealTime(clock)}")
 
         socket.send(packet)
     }
