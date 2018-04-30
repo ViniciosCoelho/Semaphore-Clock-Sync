@@ -25,9 +25,11 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Int) {
         val socket = DatagramSocket(port)
 
         while (true) {
-            sleep(Constants.minute)
+            val timeLapse = updateClock()
 
-            clock += updateClock()
+            sleep(timeLapse)
+
+            clock += timeLapse
             val time = helper.getRealTime(clock)
             println("$name - Clock updated = $time")
 

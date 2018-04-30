@@ -31,9 +31,11 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
         thread(true) { receiveParameters(socket) }
 
         while (true) {
-            sleep(Constants.minute)
+            val timeLapse = Constants.minute + 3 * Constants.second
 
-            clock += Constants.minute + 3 * Constants.second
+            sleep(timeLapse)
+
+            clock += timeLapse
             val time = helper.getRealTime(clock)
             println("Clock updated = $time")
 
