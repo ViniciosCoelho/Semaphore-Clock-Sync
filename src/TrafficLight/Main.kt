@@ -10,7 +10,7 @@ fun main(args: Array<String>) {
     val serverPort = readLine()!!.toInt()
 
     print("Choose synchronization time in minutes: ")
-    val k = readLine()!!.toInt()
+    val k = readLine()!!.toLong()
 
     print("Choose a port to run the client: ")
     val clientPort = readLine()!!.toInt()

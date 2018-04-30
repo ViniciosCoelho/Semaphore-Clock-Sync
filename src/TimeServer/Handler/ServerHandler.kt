@@ -46,7 +46,7 @@ class ServerHandler {
     }
 
     private fun updateClock() {
-        val timeLapse = Constants.minute
+        val timeLapse = 10 * Constants.second
 
         while (true) {
             sleep(timeLapse)

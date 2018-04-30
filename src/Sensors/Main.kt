@@ -7,9 +7,9 @@ fun main(args: Array<String>) {
 
     thread(true) {
         SensorH("localhost", 4000, 2)
-            .monitorTraffic(43501, "10.95.56.99", 4002)
+            .monitorTraffic(43502, "10.95.56.99", 4002)
     }
 
     SensorV("localhost", 4000, 2)
-            .monitorTraffic(43500, "10.95.56.99", 4002)
+            .monitorTraffic(43503, "10.95.56.99", 4002)
 }

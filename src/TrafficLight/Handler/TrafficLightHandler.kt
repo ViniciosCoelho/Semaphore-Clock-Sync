@@ -6,14 +6,15 @@ import java.lang.Thread.sleep
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
+import java.util.*
 import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 
-class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k: Int) {
+class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k: Long) {
     private val serverIP = serverIP
     private val serverPort = serverPort
     private val clockSyncSocket = DatagramSocket(clientPort)
-    private val syncMins = k
+    private val syncMins: Long = k
 
     private var p = 0
     private val semP = Semaphore(1)
@@ -23,10 +24,12 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
     private val helper = ClockHelper()
 
     fun runTraffic(port: Int) {
-        var syncCounter = 0
-        var modeCounter = 0
-
         val socket = DatagramSocket(port)
+
+        syncClock()
+
+        var syncCounter = clock % (Constants.minute * syncMins)
+        var modeCounter = clock % (Constants.minute * 6)
 
         thread(true) { receiveParameters(socket) }
 
@@ -47,7 +50,7 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
                 syncCounter = 0
             }
 
-            if (modeCounter == 6) {
+            if (modeCounter == 6.toLong()) {
                 changeMode()
                 modeCounter = 0
             }
@@ -101,7 +104,9 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
 
         val realTime = data.substring(0, endInd).toLong()
 
-        val d = (clock + Constants.second - clock - Constants.I) / 2
+        val rnd = Random()
+        val secs = (rnd.nextInt(50) + 5) % 50
+        val d = (clock + secs * Constants.second - clock - Constants.I) / 2
         val newClock = realTime + d
         clock = newClock
 
@@ -119,7 +124,7 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
         q = 0
         semQ.release()
 
-        val x = if (auxP + auxQ > 0) {
+        val x = if (auxP > 0 && auxQ > 0) {
             auxP.toDouble() / (auxP + auxQ).toDouble()
         } else {
             2.0
