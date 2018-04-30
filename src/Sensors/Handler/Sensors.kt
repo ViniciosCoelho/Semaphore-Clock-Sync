@@ -8,7 +8,7 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 import java.util.*
 
-abstract class Sensors(serverIP: String, serverPort: Int, k: Int) {
+abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
     protected var name: Char? = null
 
     private val serverIP = serverIP
@@ -20,12 +20,12 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Int) {
     protected var sendVarTime: Long = 0
 
     fun monitorTraffic(port: Int, trafficServerIP: String, trafficServerPort: Int) {
-        var syncCounter = 0
-        var sendCounter = 0
-
         val socket = DatagramSocket(port)
 
         syncClock(socket)
+
+        var syncCounter = clock % (Constants.minute * syncMins)
+        var sendCounter = clock % (Constants.minute * 5)
 
         while (true) {
             val timeLapse = updateClock()
@@ -44,7 +44,7 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Int) {
                 syncCounter = 0
             }
 
-            if (sendCounter == 5) {
+            if (sendCounter == 5.toLong()) {
                 sendParm(socket, trafficServerIP, trafficServerPort)
                 sendCounter = 0
             }
