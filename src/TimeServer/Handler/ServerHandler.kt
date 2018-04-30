@@ -35,10 +35,11 @@ class ServerHandler {
 
         if (received.contains(Constants.clockRequest, true)) {
             sem.acquire()
-            packet.data = clock.toString().toByteArray()
+            packet.data = (clock.toString() + '\n').toByteArray()
             sem.release()
 
             socket.send(packet)
+            println("Clock sent!")
         }
     }
 

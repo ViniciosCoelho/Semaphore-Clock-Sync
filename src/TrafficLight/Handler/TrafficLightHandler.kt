@@ -5,18 +5,25 @@ import Utils.Constants
 import java.lang.Thread.sleep
 import java.net.DatagramPacket
 import java.net.DatagramSocket
+import java.net.InetAddress
+import java.net.InetSocketAddress
 import java.util.concurrent.Semaphore
+import javax.xml.crypto.Data
 import kotlin.concurrent.thread
 import kotlin.system.measureTimeMillis
 
-class TrafficLightHandler {
-    private var p = 0
+class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k: Int) {
+    private val serverIP = serverIP
+    private val serverPort = serverPort
+    private val clockSyncSocket = DatagramSocket(clientPort)
+    private val syncMins = k
+
+    private var p = 2
     private val semP = Semaphore(1)
-    private var q = 0
+    private var q = 2
     private val semQ = Semaphore(1)
     private var clock: Long = 0
     private val helper = ClockHelper()
-    private val syncMins: Int
 
     fun runTraffic(port: Int) {
         var syncCounter = 0
@@ -37,7 +44,7 @@ class TrafficLightHandler {
             modeCounter++
 
             if (syncCounter == syncMins) {
-                syncClock(socket)
+                syncClock()
                 syncCounter = 0
             }
 
@@ -61,7 +68,7 @@ class TrafficLightHandler {
                 continue
             }
 
-            val parmVal = data.substring(1..endInd).toInt()
+            val parmVal = data.substring(1, endInd).toInt()
 
             if (data.contains("p", true)) {
                 semP.acquire()
@@ -75,18 +82,18 @@ class TrafficLightHandler {
         }
     }
 
-    private fun syncClock(socket: DatagramSocket) {
+    private fun syncClock() {
         var buffer = Constants.clockRequest.toByteArray()
-        var packet = DatagramPacket(buffer, buffer.size)
+        var packet = DatagramPacket(buffer, buffer.size, InetAddress.getByName(serverIP), serverPort)
 
-        val requestTime = measureTimeMillis {
-            socket.send(packet)
+        // val requestTime = measureTimeMillis {
+            clockSyncSocket.send(packet)
 
             buffer = ByteArray(100)
             packet = DatagramPacket(buffer, buffer.size)
 
-            socket.receive(packet)
-        }
+            clockSyncSocket.receive(packet)
+        // }
 
         val data = String(packet.data)
         val endInd = data.indexOf('\n')
@@ -95,21 +102,25 @@ class TrafficLightHandler {
             return
         }
 
-        val realTime = data.substring(0..endInd).toLong()
+        val realTime = data.substring(0, endInd).toLong()
 
         // Something is wrong here...
-        val d = clock + requestTime - clock - Constants.I
+        val d = clock + Constants.second - clock - Constants.I
         val newClock = realTime + d
         clock = newClock
+
+        println("New clock: ${helper.getRealTime(newClock)}")
     }
 
     private fun changeMode() {
         semP.acquire()
         val auxP = p
+        p = 2
         semP.release()
 
         semQ.acquire()
         val auxQ = q
+        q = 2
         semQ.release()
 
         val x = if (auxP + auxQ > 0) {
