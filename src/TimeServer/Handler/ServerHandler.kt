@@ -11,6 +11,7 @@ import kotlin.concurrent.thread
 class ServerHandler {
     private var clock: Long = 0
     private val sem = Semaphore(1)
+    private val helper = ClockHelper()
 
     init { println("Server ready!") }
 
@@ -35,11 +36,12 @@ class ServerHandler {
 
         if (received.contains(Constants.clockRequest, true)) {
             sem.acquire()
+            val clockAux = clock
             packet.data = (clock.toString() + '\n').toByteArray()
             sem.release()
 
             socket.send(packet)
-            println("Clock sent!")
+            println("Clock sent = ${helper.getRealTime(clockAux)}")
         }
     }
 
