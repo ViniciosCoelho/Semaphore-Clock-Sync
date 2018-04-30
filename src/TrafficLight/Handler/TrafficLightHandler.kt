@@ -99,8 +99,7 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
 
         val realTime = data.substring(0, endInd).toLong()
 
-        // Something is wrong here...
-        val d = clock + Constants.second - clock - Constants.I
+        val d = (clock + Constants.second - clock - Constants.I) / 2
         val newClock = realTime + d
         clock = newClock
 

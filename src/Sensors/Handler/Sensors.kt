@@ -64,8 +64,7 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Int) {
 
         val realTime = data.substring(0, endInd).toLong()
 
-        // Something is wrong here...
-        val d = clock + Constants.resquestDelay - clock - Constants.I
+        val d = (clock + Constants.resquestDelay - clock - Constants.I) / 2
         val newClock = realTime + d
         clock = newClock
 
