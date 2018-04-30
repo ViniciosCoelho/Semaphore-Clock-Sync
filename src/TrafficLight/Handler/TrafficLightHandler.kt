@@ -6,11 +6,8 @@ import java.lang.Thread.sleep
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
-import java.net.InetSocketAddress
 import java.util.concurrent.Semaphore
-import javax.xml.crypto.Data
 import kotlin.concurrent.thread
-import kotlin.system.measureTimeMillis
 
 class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k: Int) {
     private val serverIP = serverIP
@@ -86,14 +83,12 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
         var buffer = Constants.clockRequest.toByteArray()
         var packet = DatagramPacket(buffer, buffer.size, InetAddress.getByName(serverIP), serverPort)
 
-        // val requestTime = measureTimeMillis {
-            clockSyncSocket.send(packet)
+        clockSyncSocket.send(packet)
 
-            buffer = ByteArray(100)
-            packet = DatagramPacket(buffer, buffer.size)
+        buffer = ByteArray(100)
+        packet = DatagramPacket(buffer, buffer.size)
 
-            clockSyncSocket.receive(packet)
-        // }
+        clockSyncSocket.receive(packet)
 
         val data = String(packet.data)
         val endInd = data.indexOf('\n')
