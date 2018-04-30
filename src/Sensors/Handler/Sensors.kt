@@ -8,6 +8,8 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 
 abstract class Sensors(serverIP: String, serverPort: Int, k: Int) {
+    protected var name: Char? = null
+
     private val serverIP = serverIP
     private val serverPort = serverPort
     private val syncMins = k
@@ -27,7 +29,7 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Int) {
 
             clock += updateClock()
             val time = helper.getRealTime(clock)
-            println("Clock updated = $time")
+            println("$name - Clock updated = $time")
 
             syncCounter++
             sendCounter++
@@ -68,7 +70,7 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Int) {
         val newClock = realTime + d
         clock = newClock
 
-        println("New clock: ${helper.getRealTime(newClock)}")
+        println("$name - New clock: ${helper.getRealTime(newClock)}")
     }
 
     internal abstract fun sendParm(socket: DatagramSocket, trafficServerIP: String, trafficServerPort: Int)
