@@ -5,5 +5,4 @@ object Constants {
     val second: Long = 17
     val clockRequest = "Send clock now!"
     val I = second * 2
-    val resquestDelay = second * 5
 }

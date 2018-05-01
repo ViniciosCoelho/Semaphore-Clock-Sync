@@ -10,7 +10,7 @@ import java.util.Random
 class SensorV(
         serverIP: String,
         serverPort: Int,
-        k: Int
+        k: Long
 ) : Sensors(serverIP, serverPort, k) {
 
     init {
@@ -20,7 +20,7 @@ class SensorV(
     override fun sendParm(socket: DatagramSocket, trafficServerIP: String, trafficServerPort: Int) {
         val rnd = Random()
 
-        val secs = (rnd.nextInt(50) + 5) % 50
+        val secs = rnd.nextInt(46) + 5
         sendVarTime = secs * Constants.second
         sleep(sendVarTime)
 

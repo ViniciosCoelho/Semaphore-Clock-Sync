@@ -6,7 +6,7 @@ import java.lang.Thread.sleep
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
-import java.util.*
+import java.util.Random
 
 abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
     protected var name: Char? = null
@@ -23,9 +23,8 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
         val socket = DatagramSocket(port)
 
         syncClock(socket)
-
-        var syncCounter = clock % (Constants.minute * syncMins)
-        var sendCounter = clock % (Constants.minute * 5)
+        var syncCounter = (clock / Constants.minute) % syncMins
+        var sendCounter = (clock / Constants.minute) % 5
 
         while (true) {
             val timeLapse = updateClock()
@@ -72,7 +71,7 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
         val realTime = data.substring(0, endInd).toLong()
 
         val rnd = Random()
-        val secs = (rnd.nextInt(50) + 5) % 50
+        val secs = rnd.nextInt(46) + 5
         val d = (clock + secs * Constants.second - clock - Constants.I) / 2
         val newClock = realTime + d
         clock = newClock

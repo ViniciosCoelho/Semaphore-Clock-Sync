@@ -6,7 +6,7 @@ import java.lang.Thread.sleep
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
-import java.util.*
+import java.util.Random
 import java.util.concurrent.Semaphore
 import kotlin.concurrent.thread
 
@@ -27,9 +27,8 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
         val socket = DatagramSocket(port)
 
         syncClock()
-
-        var syncCounter = clock % (Constants.minute * syncMins)
-        var modeCounter = clock % (Constants.minute * 6)
+        var syncCounter = (clock / Constants.minute) % syncMins
+        var modeCounter = (clock / Constants.minute) % 6
 
         thread(true) { receiveParameters(socket) }
 
@@ -105,7 +104,7 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
         val realTime = data.substring(0, endInd).toLong()
 
         val rnd = Random()
-        val secs = (rnd.nextInt(50) + 5) % 50
+        val secs = rnd.nextInt(46) + 5
         val d = (clock + secs * Constants.second - clock - Constants.I) / 2
         val newClock = realTime + d
         clock = newClock
