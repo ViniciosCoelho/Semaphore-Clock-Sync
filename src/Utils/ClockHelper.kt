@@ -9,7 +9,13 @@ class ClockHelper {
     fun getRealTime(time: Long): String {
         val mins = time / Constants.minute
         val seconds = (time % Constants.minute) / Constants.second
+        
+        var secondsStr = seconds.toString()
 
-        return mins.toString() + ":" + seconds.toString()
+        if (secondsStr.length == 1) {
+            secondsStr = "0" + secondsStr
+        }
+
+        return mins.toString() + ":" + secondsStr
     }
 }
