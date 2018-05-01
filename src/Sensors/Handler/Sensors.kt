@@ -36,27 +36,27 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
             syncCounter = ++syncCounter % syncMins
             sendCounter = ++sendCounter % 6
 
-            if (name == 'H') {
-                println("\t\t\t\t\t\t$name - Initial clock = ${helper.getRealTime(clock)}")
-            }
-            else {
-                println("$name - Initial clock = ${helper.getRealTime(clock)}")
-            }
+            // if (name == 'H') {
+            //     println("\t\t\t\t\t\t$name - Initial clock = ${helper.getRealTime(clock)}")
+            // }
+            // else {
+            //     println("$name - Initial clock = ${helper.getRealTime(clock)}")
+            // }
         }
 
         while (true) {
             val timeLapse = updateClock()
-
+        
             sleep(timeLapse)
 
             clock += timeLapse
             val time = helper.getRealTime(clock)
-            if (name == 'H') {
-                println("\t\t\t\t\t\t$name - Clock updated = $time")
-            }
-            else {
-                println("$name - Clock updated = $time")
-            }
+            // if (name == 'H') {
+            //     println("\t\t\t\t\t\t$name - Clock updated = $time")
+            // }
+            // else {
+            //     println("$name - Clock updated = $time")
+            // }
 
             syncCounter++
             sendCounter++
@@ -100,12 +100,15 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
         val secs = rnd.nextInt(46) + 5
         val d = (clock + secs * Constants.second - clock - Constants.I) / 2
         val newClock = realTime + d
+        val oldClock = clock
         clock = newClock
 
         if (name == 'H') {
+                println("\t\t\t\t\t\t$name - Old clock: ${helper.getRealTime(oldClock)}")
                 println("\t\t\t\t\t\t$name - New clock: ${helper.getRealTime(newClock)}")
         }
         else {
+            println("$name - Old clock: ${helper.getRealTime(oldClock)}")
             println("$name - New clock: ${helper.getRealTime(newClock)}")
         }
     }

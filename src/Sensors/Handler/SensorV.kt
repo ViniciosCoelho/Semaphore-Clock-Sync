@@ -30,8 +30,7 @@ class SensorV(
         val buffer = ("q" + qVal.toString() + '\n').toByteArray()
         val packet = DatagramPacket(buffer, buffer.size, InetAddress.getByName(trafficServerIP), trafficServerPort)
 
-        clock += sendVarTime
-        println("$name - Sending Q = $qVal in clock = ${helper.getRealTime(clock)}")
+        println("$name - Sending Q = $qVal in clock = ${helper.getRealTime(clock)} + $secs sec")
 
         socket.send(packet)
     }

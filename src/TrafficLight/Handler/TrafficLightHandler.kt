@@ -58,7 +58,7 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
 
             clock += timeLapse
             val time = helper.getRealTime(clock)
-            println("Clock updated = $time")
+            // println("Clock updated = $time")
 
             syncCounter++
             modeCounter++
@@ -137,6 +137,9 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
         }
 
         val realTime = data.substring(0, endInd).toLong()
+
+        println("Old clock: ${helper.getRealTime(clock)}")
+
 
         val rnd = Random()
         val secs = rnd.nextInt(46) + 5

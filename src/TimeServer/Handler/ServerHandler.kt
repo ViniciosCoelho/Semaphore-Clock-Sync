@@ -46,7 +46,7 @@ class ServerHandler {
     }
 
     private fun updateClock() {
-        val timeLapse = 30 * Constants.second
+        val timeLapse = 1 * Constants.second
 
         while (true) {
             sleep(timeLapse)
@@ -54,7 +54,9 @@ class ServerHandler {
             sem.acquire()
             clock += timeLapse
             val time = ClockHelper().getRealTime(clock)
-            println("Clock updated = $time")
+            if (clock % 100.0 == 0.0) {
+                println("Clock updated = $time")
+            }
             sem.release()
         }
     }
