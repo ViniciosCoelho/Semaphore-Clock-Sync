@@ -37,7 +37,8 @@ class SensorV(
     }
 
     override fun updateClock(): Long {
-        val updVal = Constants.minute + 6 * Constants.second - sendVarTime
+        // Maybe I misunderstood this part
+        val updVal = Constants.minute - 6 * Constants.second - sendVarTime
         sendVarTime = 0
         return updVal
     }

@@ -23,6 +23,11 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
     private var clock: Long = 0
     private val helper = ClockHelper()
 
+    /*
+    private var syncCounter: Long = 0
+    private var modeCounter: Long = 0
+    */
+
     fun runTraffic(port: Int) {
         val socket = DatagramSocket(port)
 
@@ -33,7 +38,8 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
         thread(true) { receiveParameters(socket) }
 
         while (true) {
-            val timeLapse = Constants.minute + 3 * Constants.second
+            // Maybe I misunderstood this part
+            val timeLapse = Constants.minute - 3 * Constants.second
 
             sleep(timeLapse)
 
@@ -73,11 +79,27 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
 
             if (data.contains("p", true)) {
                 semP.acquire()
-                p = parmVal
+                p = if (p != 0) {
+                    if (p < 0) {
+                        p
+                    } else {
+                        -1
+                    }
+                } else {
+                    parmVal
+                }
                 semP.release()
             } else {
                 semQ.acquire()
-                q = parmVal
+                q = if (q != 0) {
+                    if (q < 0) {
+                        q
+                    } else {
+                        -1
+                    }
+                } else {
+                    parmVal
+                }
                 semQ.release()
             }
         }
@@ -123,22 +145,27 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
         q = 0
         semQ.release()
 
-        val x = if (auxP > 0 && auxQ > 0) {
-            auxP.toDouble() / (auxP + auxQ).toDouble()
-        } else {
+        val x = if (auxP == 0 || auxQ == 0) {
             2.0
+        } else {
+            if (auxP < 0 || auxQ < 0) {
+                -1.0
+            } else {
+                auxP.toDouble() / (auxP + auxQ).toDouble()
+            }
         }
 
         val time = helper.getRealTime(clock)
         val parms = "Clock = $time P = $auxP Q = $auxQ"
 
         when {
+            x < 0.0 -> println("Parameters sent more then one time!")
             x <= 0.2 -> println(parms + " Mode 1")
             0.2 < x && x <= 0.4 -> println(parms + " Mode 2")
             0.4 < x && x <= 0.6 -> println(parms + " Mode 3")
             0.6 < x && x <= 0.8 -> println(parms + " Mode 4")
             0.8 < x && x <= 1 -> println(parms + " Mode 5")
-            else -> println("There are no parameters!")
+            else -> println("There aren't sufficient parameters!")
         }
     }
 }
