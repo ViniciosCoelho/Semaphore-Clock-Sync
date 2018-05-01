@@ -36,7 +36,12 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
             syncCounter = ++syncCounter % syncMins
             sendCounter = ++sendCounter % 6
 
-            println("$name - Initial clock = ${helper.getRealTime(clock)}")
+            if (name == 'H') {
+                println("\t\t\t\t\t\t$name - Initial clock = ${helper.getRealTime(clock)}")
+            }
+            else {
+                println("$name - Initial clock = ${helper.getRealTime(clock)}")
+            }
         }
 
         while (true) {
@@ -46,7 +51,12 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
 
             clock += timeLapse
             val time = helper.getRealTime(clock)
-            println("$name - Clock updated = $time")
+            if (name == 'H') {
+                println("\t\t\t\t\t\t$name - Clock updated = $time")
+            }
+            else {
+                println("$name - Clock updated = $time")
+            }
 
             syncCounter++
             sendCounter++
@@ -92,7 +102,12 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
         val newClock = realTime + d
         clock = newClock
 
-        println("$name - New clock: ${helper.getRealTime(newClock)}")
+        if (name == 'H') {
+                println("\t\t\t\t\t\t$name - New clock: ${helper.getRealTime(newClock)}")
+        }
+        else {
+            println("$name - New clock: ${helper.getRealTime(newClock)}")
+        }
     }
 
     internal abstract fun sendParm(socket: DatagramSocket, trafficServerIP: String, trafficServerPort: Int)

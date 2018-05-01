@@ -24,14 +24,14 @@ class SensorH(
         sendVarTime = secs * Constants.second
         sleep(sendVarTime)
 
-        println("$name - Message delayed = $secs seconds")
+        println("\t\t\t\t\t\t$name - Message delayed = $secs seconds")
 
         val pVal = rnd.nextInt(100) + 1
         val buffer = ("p" + pVal.toString() + '\n').toByteArray()
         val packet = DatagramPacket(buffer, buffer.size, InetAddress.getByName(trafficServerIP), trafficServerPort)
 
         clock += sendVarTime
-        println("$name - Sending P = $pVal in clock = ${helper.getRealTime(clock)}")
+        println("\t\t\t\t\t\t$name - Sending P = $pVal in clock = ${helper.getRealTime(clock)}")
 
         socket.send(packet)
     }
