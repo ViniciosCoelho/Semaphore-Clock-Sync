@@ -24,7 +24,7 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
 
         syncClock(socket)
         var syncCounter = (clock / Constants.minute) % syncMins
-        var sendCounter = (clock / Constants.minute) % 5
+        var sendCounter = (clock / Constants.minute) % 6
 
         val isExact = clock % Constants.minute
 
@@ -34,7 +34,7 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
             clock += delayToInit
 
             syncCounter = ++syncCounter % syncMins
-            sendCounter = ++sendCounter % 5
+            sendCounter = ++sendCounter % 6
 
             println("$name - Initial clock = ${helper.getRealTime(clock)}")
         }
@@ -58,6 +58,9 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
 
             if (sendCounter == 5.toLong()) {
                 sendParm(socket, trafficServerIP, trafficServerPort)
+            }
+
+            if (sendCounter == 6.toLong()) {
                 sendCounter = 0
             }
         }

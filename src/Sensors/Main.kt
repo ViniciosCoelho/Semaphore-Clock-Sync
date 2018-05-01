@@ -4,10 +4,10 @@ import kotlin.concurrent.thread
 
 fun main(args: Array<String>) {
     thread(true) {
-        SensorH("localhost", 4000, 2)
+        SensorH("localhost", 4000, 6)
             .monitorTraffic(43502, "localhost", 4002)
     }
 
-    SensorV("localhost", 4000, 2)
+    SensorV("localhost", 4000, 6)
             .monitorTraffic(43503, "localhost", 4002)
 }

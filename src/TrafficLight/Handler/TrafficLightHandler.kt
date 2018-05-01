@@ -52,7 +52,7 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
 
         while (true) {
             // Maybe I misunderstood this part
-            val timeLapse = Constants.minute + 3 * Constants.second
+            val timeLapse = Constants.minute - 3 * Constants.second
 
             sleep(timeLapse)
 
@@ -158,27 +158,23 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
         q = 0
         semQ.release()
 
-        val x = if (auxP == 0 || auxQ == 0) {
-            2.0
+        val x = if (auxP > 0 && auxQ > 0) {
+            auxP.toDouble() / (auxP + auxQ).toDouble()
         } else {
-            if (auxP < 0 || auxQ < 0) {
-                -1.0
-            } else {
-                auxP.toDouble() / (auxP + auxQ).toDouble()
-            }
+            0.0
         }
 
         val time = helper.getRealTime(clock)
         val parms = "Clock = $time P = $auxP Q = $auxQ"
 
         when {
-            x < 0.0 -> println("Parameters sent more then one time!")
+            auxQ == 0 || auxP == 0 -> println("There aren't sufficient parameters!")
+            auxQ < 0 || auxP < 0 -> println("Parameters sent more then one time!")
             x <= 0.2 -> println(parms + " Mode 1")
             0.2 < x && x <= 0.4 -> println(parms + " Mode 2")
             0.4 < x && x <= 0.6 -> println(parms + " Mode 3")
             0.6 < x && x <= 0.8 -> println(parms + " Mode 4")
             0.8 < x && x <= 1 -> println(parms + " Mode 5")
-            else -> println("There aren't sufficient parameters!")
         }
     }
 }

@@ -20,7 +20,7 @@ class SensorV(
     override fun sendParm(socket: DatagramSocket, trafficServerIP: String, trafficServerPort: Int) {
         val rnd = Random()
 
-        val secs = rnd.nextInt(46) + 5
+        val secs = 5 // rnd.nextInt(46) + 5
         sendVarTime = secs * Constants.second
         sleep(sendVarTime)
 
