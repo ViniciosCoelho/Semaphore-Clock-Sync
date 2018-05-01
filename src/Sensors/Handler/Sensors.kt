@@ -26,6 +26,19 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
         var syncCounter = (clock / Constants.minute) % syncMins
         var sendCounter = (clock / Constants.minute) % 5
 
+        val isExact = clock % Constants.minute
+
+        if (isExact != 0.toLong()) {
+            val delayToInit = Constants.minute - isExact
+            sleep(delayToInit)
+            clock += delayToInit
+
+            syncCounter = ++syncCounter % syncMins
+            sendCounter = ++sendCounter % 5
+
+            println("$name - Initial clock = ${helper.getRealTime(clock)}")
+        }
+
         while (true) {
             val timeLapse = updateClock()
 

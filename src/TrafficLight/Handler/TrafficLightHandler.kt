@@ -35,11 +35,24 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
         var syncCounter = (clock / Constants.minute) % syncMins
         var modeCounter = (clock / Constants.minute) % 6
 
+        val isExact = clock % Constants.minute
+
+        if (isExact != 0.toLong()) {
+            val delayToInit = Constants.minute - isExact
+            sleep(delayToInit)
+            clock += delayToInit
+
+            syncCounter = ++syncCounter % syncMins
+            modeCounter = ++modeCounter % 6
+
+            println("Initial clock = ${helper.getRealTime(clock)}")
+        }
+
         thread(true) { receiveParameters(socket) }
 
         while (true) {
             // Maybe I misunderstood this part
-            val timeLapse = Constants.minute - 3 * Constants.second
+            val timeLapse = Constants.minute + 3 * Constants.second
 
             sleep(timeLapse)
 
