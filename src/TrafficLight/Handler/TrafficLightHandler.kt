@@ -52,7 +52,7 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
 
         while (true) {
             // Maybe I misunderstood this part
-            val timeLapse = Constants.minute - 3 * Constants.second
+            val timeLapse = Constants.minute + 3 * Constants.second
 
             sleep(timeLapse)
 
