@@ -7,72 +7,69 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
 import java.util.Random
+import java.util.concurrent.Semaphore
+import kotlin.concurrent.thread
 
 abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
-    protected var name: Char? = null
+    protected var name = ""
 
     private val serverIP = serverIP
     private val serverPort = serverPort
     private val syncMins = k
 
     protected var clock: Long = 0
+    protected val semClock = Semaphore(1)
     protected val helper = ClockHelper()
-    protected var sendVarTime: Long = 0
 
     fun monitorTraffic(port: Int, trafficServerIP: String, trafficServerPort: Int) {
         val socket = DatagramSocket(port)
 
-        syncClock(socket)
-        var syncCounter = (clock / Constants.minute) % syncMins
-        var sendCounter = (clock / Constants.minute) % 6
-
-        val isExact = clock % Constants.minute
-
-        if (isExact != 0.toLong()) {
-            val delayToInit = Constants.minute - isExact
-            sleep(delayToInit)
-            clock += delayToInit
-
-            syncCounter = ++syncCounter % syncMins
-            sendCounter = ++sendCounter % 6
-
-            // if (name == 'H') {
-            //     println("\t\t\t\t\t\t$name - Initial clock = ${helper.getRealTime(clock)}")
-            // }
-            // else {
-            //     println("$name - Initial clock = ${helper.getRealTime(clock)}")
-            // }
-        }
+        var syncCounter = syncMins
+        var sendCounter: Long = 0
 
         while (true) {
-            val timeLapse = updateClock()
-        
-            sleep(timeLapse)
-
-            clock += timeLapse
-            val time = helper.getRealTime(clock)
-            // if (name == 'H') {
-            //     println("\t\t\t\t\t\t$name - Clock updated = $time")
-            // }
-            // else {
-            //     println("$name - Clock updated = $time")
-            // }
-
-            syncCounter++
-            sendCounter++
-
             if (syncCounter == syncMins) {
                 syncClock(socket)
-                syncCounter = 0
+
+                semClock.acquire()
+
+                val isExact = clock % Constants.minute
+
+                if (isExact != 0.toLong()) {
+                    val delayToInit =  Constants.minute - isExact
+                    sleep(updateClock() - isExact)
+                    clock += delayToInit
+                }
+
+                syncCounter = (clock / Constants.minute) % syncMins
+                sendCounter = (clock / Constants.minute) % 6
+
+                semClock.release()
+            } else {
+
+                if (sendCounter == 5.toLong()) {
+                    thread(true) { sendParm(socket, trafficServerIP, trafficServerPort) }
+                }
+
+                if (sendCounter == 6.toLong()) {
+                    sendCounter = 0
+                }
+
+                val timeLapse = updateClock()
+                sleep(timeLapse)
+
+                semClock.acquire()
+                clock += Constants.minute
+                semClock.release()
+
+                syncCounter++
+                sendCounter++
             }
 
-            if (sendCounter == 5.toLong()) {
-                sendParm(socket, trafficServerIP, trafficServerPort)
-            }
-
-            if (sendCounter == 6.toLong()) {
-                sendCounter = 0
-            }
+            semClock.acquire()
+            val time = helper.getRealTime(clock)
+            semClock.release()
+            println("$name - Clock = $time")
         }
     }
 
@@ -96,21 +93,18 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
 
         val realTime = data.substring(0, endInd).toLong()
 
+        semClock.acquire()
         val rnd = Random()
         val secs = rnd.nextInt(46) + 5
         val d = (clock + secs * Constants.second - clock - Constants.I) / 2
         val newClock = realTime + d
         val oldClock = clock
         clock = newClock
+        semClock.release()
 
-        if (name == 'H') {
-                println("\t\t\t\t\t\t$name - Old clock: ${helper.getRealTime(oldClock)}")
-                println("\t\t\t\t\t\t$name - New clock: ${helper.getRealTime(newClock)}")
-        }
-        else {
-            println("$name - Old clock: ${helper.getRealTime(oldClock)}")
-            println("$name - New clock: ${helper.getRealTime(newClock)}")
-        }
+        println("$name - Sending sync request in ${helper.getRealTime(oldClock)} + $secs sec")
+        println("$name - Old clock: ${helper.getRealTime(oldClock)}")
+        println("$name - New clock: ${helper.getRealTime(newClock)}")
     }
 
     internal abstract fun sendParm(socket: DatagramSocket, trafficServerIP: String, trafficServerPort: Int)

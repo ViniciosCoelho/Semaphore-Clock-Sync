@@ -23,11 +23,6 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
     private var clock: Long = 0
     private val helper = ClockHelper()
 
-    /*
-    private var syncCounter: Long = 0
-    private var modeCounter: Long = 0
-    */
-
     fun runTraffic(port: Int) {
         val socket = DatagramSocket(port)
 
@@ -136,17 +131,16 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
             return
         }
 
-        val realTime = data.substring(0, endInd).toLong()
-
-        println("Old clock: ${helper.getRealTime(clock)}")
-
-
         val rnd = Random()
+        val realTime = data.substring(0, endInd).toLong()
         val secs = rnd.nextInt(46) + 5
         val d = (clock + secs * Constants.second - clock - Constants.I) / 2
         val newClock = realTime + d
+        val oldClock = clock
         clock = newClock
 
+        println("Sending sync request in ${helper.getRealTime(oldClock)} + $secs sec")
+        println("Old clock: ${helper.getRealTime(oldClock)}")
         println("New clock: ${helper.getRealTime(newClock)}")
     }
 
@@ -174,10 +168,10 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
             auxQ == 0 || auxP == 0 -> println("There aren't sufficient parameters!")
             auxQ < 0 || auxP < 0 -> println("Parameters sent more then one time!")
             x <= 0.2 -> println(parms + " Mode 1")
-            0.2 < x && x <= 0.4 -> println(parms + " Mode 2")
-            0.4 < x && x <= 0.6 -> println(parms + " Mode 3")
-            0.6 < x && x <= 0.8 -> println(parms + " Mode 4")
-            0.8 < x && x <= 1 -> println(parms + " Mode 5")
+            0.2 < x && x <= 0.4 -> println("$parms Mode 2")
+            0.4 < x && x <= 0.6 -> println("$parms Mode 3")
+            0.6 < x && x <= 0.8 -> println("$parms Mode 4")
+            0.8 < x && x <= 1 -> println("$parms Mode 5")
         }
     }
 }

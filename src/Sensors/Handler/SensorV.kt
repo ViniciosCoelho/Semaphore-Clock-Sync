@@ -14,14 +14,14 @@ class SensorV(
 ) : Sensors(serverIP, serverPort, k) {
 
     init {
-        name = 'V'
+        name = "V"
     }
 
     override fun sendParm(socket: DatagramSocket, trafficServerIP: String, trafficServerPort: Int) {
         val rnd = Random()
 
-        val secs = 5 // rnd.nextInt(46) + 5
-        sendVarTime = secs * Constants.second
+        val secs = rnd.nextInt(46) + 5
+        val sendVarTime = secs * Constants.second
         sleep(sendVarTime)
 
         println("$name - Message delayed = $secs seconds")
@@ -30,15 +30,12 @@ class SensorV(
         val buffer = ("q" + qVal.toString() + '\n').toByteArray()
         val packet = DatagramPacket(buffer, buffer.size, InetAddress.getByName(trafficServerIP), trafficServerPort)
 
+        semClock.acquire()
         println("$name - Sending Q = $qVal in clock = ${helper.getRealTime(clock)} + $secs sec")
+        semClock.release()
 
         socket.send(packet)
     }
 
-    override fun updateClock(): Long {
-        // Maybe I misunderstood this part
-        val updVal = Constants.minute + 6 * Constants.second - sendVarTime
-        sendVarTime = 0
-        return updVal
-    }
+    override fun updateClock(): Long = Constants.minute - 6 * Constants.second
 }
