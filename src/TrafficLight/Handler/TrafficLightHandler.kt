@@ -26,42 +26,37 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
     fun runTraffic(port: Int) {
         val socket = DatagramSocket(port)
 
-        syncClock()
-        var syncCounter = (clock / Constants.minute) % syncMins
-        var modeCounter = (clock / Constants.minute) % 6
-
-        val isExact = clock % Constants.minute
-
-        if (isExact != 0.toLong()) {
-            val delayToInit = Constants.minute - isExact
-            sleep(delayToInit)
-            clock += delayToInit
-
-            syncCounter = ++syncCounter % syncMins
-            modeCounter = ++modeCounter % 6
-
-            println("Initial clock = ${helper.getRealTime(clock)}")
-        }
+        var syncCounter = syncMins
+        var modeCounter: Long = 0
 
         thread(true) { receiveParameters(socket) }
 
         while (true) {
-            // Maybe I misunderstood this part
-            val timeLapse = Constants.minute + 3 * Constants.second
-
-            sleep(timeLapse)
-
-            clock += timeLapse
-            val time = helper.getRealTime(clock)
-            // println("Clock updated = $time")
-
-            syncCounter++
-            modeCounter++
-
             if (syncCounter == syncMins) {
                 syncClock()
-                syncCounter = 0
+
+                val isExact = clock % Constants.minute
+
+                if (isExact != 0.toLong()) {
+                    val delayToInit =  Constants.minute - isExact
+                    sleep(delayToInit)
+                    clock += delayToInit
+                }
+
+                syncCounter = (clock / Constants.minute) % syncMins
+                modeCounter = (clock / Constants.minute) % 6
+            } else {
+                val timeLapse = updateClock()
+                sleep(timeLapse)
+
+                clock += Constants.minute
+
+                syncCounter++
+                modeCounter++
             }
+
+            val time = helper.getRealTime(clock)
+            println("Clock = $time")
 
             if (modeCounter == 6.toLong()) {
                 changeMode()
@@ -69,6 +64,8 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
             }
         }
     }
+
+    private fun updateClock(): Long = Constants.minute - 3 * Constants.second
 
     private fun receiveParameters(socket: DatagramSocket) {
         while (true) {
@@ -86,6 +83,7 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
             val parmVal = data.substring(1, endInd).toInt()
 
             if (data.contains("p", true)) {
+                println("Received P = $parmVal")
                 semP.acquire()
                 p = if (p != 0) {
                     if (p < 0) {
@@ -98,6 +96,7 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
                 }
                 semP.release()
             } else {
+                println("Received Q = $parmVal")
                 semQ.acquire()
                 q = if (q != 0) {
                     if (q < 0) {
@@ -140,7 +139,7 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
         clock = newClock
 
         println("Sending sync request in ${helper.getRealTime(oldClock)} + $secs sec")
-        println("Old clock: ${helper.getRealTime(oldClock)}")
+        println("Old clock: ${helper.getRealTime(oldClock + secs * Constants.second)}")
         println("New clock: ${helper.getRealTime(newClock)}")
     }
 
@@ -160,14 +159,14 @@ class TrafficLightHandler(serverIP: String, serverPort: Int, clientPort: Int, k:
         } else {
             0.0
         }
-
+        
         val time = helper.getRealTime(clock)
         val parms = "Clock = $time P = $auxP Q = $auxQ"
 
         when {
             auxQ == 0 || auxP == 0 -> println("There aren't sufficient parameters!")
             auxQ < 0 || auxP < 0 -> println("Parameters sent more then one time!")
-            x <= 0.2 -> println(parms + " Mode 1")
+            x <= 0.2 -> println("$parms Mode 1")
             0.2 < x && x <= 0.4 -> println("$parms Mode 2")
             0.4 < x && x <= 0.6 -> println("$parms Mode 3")
             0.6 < x && x <= 0.8 -> println("$parms Mode 4")

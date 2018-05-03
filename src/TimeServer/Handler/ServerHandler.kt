@@ -54,7 +54,7 @@ class ServerHandler {
             sem.acquire()
             clock += timeLapse
             val time = ClockHelper().getRealTime(clock)
-            if (clock % 100.0 == 0.0) {
+            if (clock % (20 * Constants.second) == 0.toLong()) {
                 println("Clock updated = $time")
             }
             sem.release()

@@ -32,29 +32,22 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
                 syncClock(socket)
 
                 semClock.acquire()
-
                 val isExact = clock % Constants.minute
+                semClock.release()
 
                 if (isExact != 0.toLong()) {
                     val delayToInit =  Constants.minute - isExact
-                    sleep(updateClock() - isExact)
+                    sleep(delayToInit)
+                    semClock.acquire()
                     clock += delayToInit
+                    semClock.release()
                 }
 
+                semClock.acquire()
                 syncCounter = (clock / Constants.minute) % syncMins
                 sendCounter = (clock / Constants.minute) % 6
-
                 semClock.release()
             } else {
-
-                if (sendCounter == 5.toLong()) {
-                    thread(true) { sendParm(socket, trafficServerIP, trafficServerPort) }
-                }
-
-                if (sendCounter == 6.toLong()) {
-                    sendCounter = 0
-                }
-
                 val timeLapse = updateClock()
                 sleep(timeLapse)
 
@@ -70,6 +63,14 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
             val time = helper.getRealTime(clock)
             semClock.release()
             println("$name - Clock = $time")
+
+            if (sendCounter == 5.toLong()) {
+                thread(true) { sendParm(socket, trafficServerIP, trafficServerPort) }
+            }
+
+            if (sendCounter == 6.toLong()) {
+                sendCounter = 0
+            }
         }
     }
 
@@ -103,7 +104,7 @@ abstract class Sensors(serverIP: String, serverPort: Int, k: Long) {
         semClock.release()
 
         println("$name - Sending sync request in ${helper.getRealTime(oldClock)} + $secs sec")
-        println("$name - Old clock: ${helper.getRealTime(oldClock)}")
+        println("$name - Old clock: ${helper.getRealTime(oldClock + secs * Constants.second)}")
         println("$name - New clock: ${helper.getRealTime(newClock)}")
     }
 
